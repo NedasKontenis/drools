@@ -1,0 +1,62 @@
+package org.drools.examples.army
+
+import org.drools.examples.army.Person;
+import org.drools.examples.army.ArmyRole;
+
+rule "Eligible for Conscription"
+    when
+        $p : Person(age >= 18, age <= 28, healthy == true, enlisted == false, volunteer == false)
+    then
+        System.out.println($p.getName() + " is eligible for conscription.");
+        $p.setEnlisted(true);
+        update($p);
+end
+
+rule "Volunteers Eligible for Service"
+    when
+        $p : Person(age >= 18, age <= 35, healthy == true, enlisted == false, volunteer == true)
+    then
+        System.out.println($p.getName() + " is eligible for service.");
+        $p.setEnlisted(true);
+        update($p);
+end
+
+rule "Assign to Infantry"
+    when
+        $p : Person(enlisted == true, engineer == false)
+    then
+        ArmyRole role = new ArmyRole("Infantry", $p);
+        insert(role);
+        System.out.println($p.getName() + " assigned to Infantry.");
+end
+
+rule "Assign to Technical Unit"
+    when
+        $p : Person(enlisted == true, engineer == true)
+    then
+        ArmyRole role = new ArmyRole("Technical Unit", $p);
+        insert(role);
+        System.out.println($p.getName() + " assigned to Technical Unit.");
+end
+
+rule "Assign Infantry role person to Base"
+when
+    $p : Person( )
+    $r : ArmyRole(person == $p, name == "Infantry")
+then
+    MilitaryBase base = new MilitaryBase("Fort Brave", "InfantryTraining");
+    $p.setAssignedBase(base);
+    update($p);
+    System.out.println($p.getName() + " assigned to " + base.getName() + " for Infantry training.");
+end
+
+rule "Assign Technical Unit role person to Base"
+when
+    $p : Person( )
+    $r : ArmyRole(person == $p, name == "Technical Unit")
+then
+    MilitaryBase base = new MilitaryBase("Tech Camp Alpha", "TechnicalTraining");
+    $p.setAssignedBase(base);
+    update($p);
+    System.out.println($p.getName() + " assigned to " + base.getName() + " for Technical training.");
+end
